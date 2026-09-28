@@ -4,9 +4,10 @@
 .pulse{animation:pulse 2.5s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:.45}50%{opacity:.65}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}</style>
-<defs><filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="17.0"/></filter><clipPath id="card"><rect width="1200" height="193" rx="11.3"/></clipPath></defs>
+<defs><filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="17.0"/></filter><filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><clipPath id="card"><rect width="1200" height="193" rx="11.3"/></clipPath></defs>
 <g clip-path="url(#card)">
 <rect width="1200" height="193" fill="#080808"/>
+<rect width="1200" height="193" filter="url(#grain)" opacity=".04"/>
 <text class="m" x="600.0" y="59.599999999999994" text-anchor="middle" font-size="17.0" letter-spacing="3.4" fill="#FF0000">GET IN TOUCH</text>
 <rect class="pulse" x="413.3" y="85.1" width="373.4" height="62.4" rx="5.7" fill="#FF0000" filter="url(#glow)"/>
 <rect x="413.3" y="85.1" width="373.4" height="62.4" rx="5.7" fill="#FF0000"/>
