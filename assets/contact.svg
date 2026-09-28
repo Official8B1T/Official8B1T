@@ -9,9 +9,9 @@
 <rect width="1200" height="193" fill="#080808"/>
 <rect width="1200" height="193" filter="url(#grain)" opacity=".04"/>
 <text class="m" x="600.0" y="59.599999999999994" text-anchor="middle" font-size="17.0" letter-spacing="3.4" fill="#FF0000">GET IN TOUCH</text>
-<rect class="pulse" x="413.3" y="85.1" width="373.4" height="62.4" rx="5.7" fill="#FF0000" filter="url(#glow)"/>
-<rect x="413.3" y="85.1" width="373.4" height="62.4" rx="5.7" fill="#FF0000"/>
-<text class="m" x="600.0" y="122.9" text-anchor="middle" font-size="18.4" font-weight="700" letter-spacing="3.7" fill="#080808" xml:space="preserve">8B1T.BIZ@PROTON.ME  →</text>
+<rect class="pulse" x="435.4" y="85.1" width="329.3" height="62.4" rx="5.7" fill="#FF0000" filter="url(#glow)"/>
+<rect x="435.4" y="85.1" width="329.3" height="62.4" rx="5.7" fill="#FF0000"/>
+<text class="m" x="600.0" y="122.9" text-anchor="middle" font-size="18.4" font-weight="700" letter-spacing="3.7" fill="#080808" xml:space="preserve">8B1T.BIZ@PROTON.ME</text>
 </g>
 <rect x=".5" y=".5" width="1199" height="192" rx="11.3" fill="none" stroke="#242424" vector-effect="non-scaling-stroke"/>
 </svg>

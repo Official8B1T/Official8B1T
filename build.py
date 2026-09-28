@@ -101,7 +101,7 @@ def svg(h, css, defs, body, label):
 # ── TERMINAL · Git for Windows (Git Bash in mintty) ───────
 
 # Git Bash default PS1: blank line, user@host MSYSTEM cwd (branch), then "$ " on its own line
-PS1 = [("official@8B1T", SIGNAL), (" ", BONE), ("MINGW64", SMOKE), (" ", BONE), ("/c/8B1T", BONE), (" ", BONE), ("(main)", SMOKE)]
+PS1 = [("Official@8B1T", SIGNAL), (" ", BONE), ("MINGW64", SMOKE), (" ", BONE), ("/c/8B1T", BONE), (" ", BONE), ("(main)", SMOKE)]
 PROMPT = "$ "
 TITLE = "MINGW64:/c/8B1T"  # mintty window title = $MSYSTEM:$PWD
 FS, LH = 18, 26
@@ -275,7 +275,7 @@ EMAIL = "8b1t.biz@proton.me"
 
 def contact():
     fs, ls = px(13), px(13) * 0.2
-    label = f"{EMAIL.upper()}  →"
+    label = EMAIL.upper()
     bw = len(label) * (fs * 0.6 + ls) - ls + 2 * px(24)
     bh, bx = px(44), (W - bw) / 2
     top = px(32)
