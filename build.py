@@ -1,0 +1,242 @@
+# ─────────────────────────────────────────────────────
+#   project · Official8B1T
+#   module  · build.py — renders profile SVGs with embedded font subsets
+#   author  · Jiří "8B1T" Lhotský
+# ─────────────────────────────────────────────────────
+
+import base64
+import re
+import urllib.parse
+import urllib.request
+from pathlib import Path
+from xml.sax.saxutils import escape
+
+OUT = Path(__file__).parent / "assets"
+
+# ── TOKENS · 8B1T Design System v2.1 ─────────────────────
+
+VOID, CARBON, ASH = "#080808", "#161616", "#242424"
+CRIMSON, SIGNAL = "#C20017", "#FF0000"
+BONE, PURE, SMOKE, OK = "#F5F2EF", "#FFFFFF", "#818181", "#1FB85C"
+
+# ── FONTS ─────────────────────────────────────────────────
+
+# NOTE · JetBrains Mono and Space Grotesk are SIL OFL 1.1 — embedding subsets in documents is permitted
+# ASCII + Czech, so text edits never need a new subset
+CHARSET = "".join(map(chr, range(32, 127))) + "ěščřžýáíéúůťďňĚŠČŘŽÝÁÍÉÚŮŤĎŇ·—→█°"
+UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/140.0 Safari/537.36"  # woff2 only for modern UAs
+
+
+def fetch(url):
+    with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": UA}), timeout=30) as r:
+        return r.read()
+
+
+# inline a Google Fonts subset — SVG rendered via <img> must not load external resources
+def font_face(family, weight, alias):
+    q = urllib.parse.urlencode({"family": f"{family}:wght@{weight}", "text": CHARSET})
+    css = fetch(f"https://fonts.googleapis.com/css2?{q}").decode()
+    url = re.search(r"url\((https://[^)]+)\)", css).group(1)
+    data = base64.b64encode(fetch(url)).decode()
+    return f"@font-face{{font-family:{alias};font-weight:{weight};src:url(data:font/woff2;base64,{data}) format('woff2')}}"
+
+
+FONTS = "".join([
+    font_face("JetBrains Mono", 400, "M"),
+    font_face("JetBrains Mono", 700, "M"),
+    font_face("Space Grotesk", 700, "G"),
+])
+
+BASE_CSS = f"""{FONTS}
+.m{{font-family:M,'JetBrains Mono',Consolas,monospace}}
+.g{{font-family:G,'Space Grotesk',sans-serif;font-weight:700}}
+.pulse{{animation:pulse 2.5s ease-in-out infinite}}
+@keyframes pulse{{0%,100%{{opacity:.45}}50%{{opacity:.65}}}}
+@media (prefers-reduced-motion:reduce){{*{{animation:none!important}}}}"""
+
+GLOW = """<filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+  <feGaussianBlur stdDeviation="{0}"/>
+</filter>"""
+
+
+def svg(w, h, css, defs, body, label):
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}" width="{w}" height="{h}" role="img" aria-label="{escape(label, {'"': "&quot;"})}">
+<style>{css}</style>
+<defs>{defs}</defs>
+{body}
+</svg>
+"""
+
+
+def crop_marks(w, h, inset=20, size=16):
+    c = [(inset, inset, 1, 1), (w - inset, inset, -1, 1), (inset, h - inset, 1, -1), (w - inset, h - inset, -1, -1)]
+    d = "".join(f"M{x} {y + size * sy}V{y}H{x + size * sx}" for x, y, sx, sy in c)
+    return f'<path d="{d}" fill="none" stroke="{ASH}" stroke-width="2"/>'
+
+
+# ── BANNER ────────────────────────────────────────────────
+
+def banner():
+    w, h = 1200, 400
+    defs = f"""{GLOW.format(14)}
+<radialGradient id="aura"><stop offset="0" stop-color="{CRIMSON}" stop-opacity=".38"/><stop offset=".68" stop-color="{CRIMSON}" stop-opacity="0"/></radialGradient>
+<pattern id="scan" width="4" height="4" patternUnits="userSpaceOnUse"><rect width="4" height="1" fill="{PURE}" opacity=".03"/></pattern>
+<filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter>"""
+    # the glow copy repeats the wordmark with only the "1" painted, so it aligns glyph for glyph
+    mark = '<tspan fill-opacity="{o}">8B</tspan><tspan fill="{s}">1</tspan><tspan fill-opacity="{o}">T</tspan>'
+    word = 'x="600" y="262" text-anchor="middle" font-size="210" letter-spacing="-6"'
+    body = f"""<rect width="{w}" height="{h}" fill="{VOID}"/>
+<ellipse cx="600" cy="205" rx="480" ry="240" fill="url(#aura)"/>
+<rect width="{w}" height="{h}" filter="url(#grain)" opacity=".07"/>
+<rect width="{w}" height="{h}" fill="url(#scan)"/>
+{crop_marks(w, h)}
+<g class="m" font-size="14" letter-spacing="2.8" fill="{SMOKE}">
+  <text x="56" y="62"><tspan fill="{SIGNAL}">//</tspan> JIŘÍ LHOTSKÝ</text>
+  <text x="1144" y="62" text-anchor="end">PRAGUE · CZ</text>
+  <text x="56" y="352" font-size="12">50.0755°N · 14.4378°E</text>
+  <text x="1144" y="352" font-size="12" text-anchor="end">STATUS · ONLINE</text>
+</g>
+<circle class="pulse" cx="978" cy="348" r="4" fill="{OK}"/>
+<text {word} fill="{SIGNAL}" filter="url(#glow)" class="g pulse">{mark.format(o=0, s=SIGNAL)}</text>
+<text class="g" {word} fill="{PURE}">{mark.format(o=1, s=SIGNAL)}</text>
+<rect class="pulse" x="577" y="292" width="46" height="2" fill="{SIGNAL}" filter="url(#glow)"/>
+<rect x="577" y="292" width="46" height="2" fill="{SIGNAL}"/>
+<text class="m" x="600" y="334" text-anchor="middle" font-size="16" letter-spacing="5" fill="{BONE}">SYSADMIN <tspan fill="{SIGNAL}">·</tspan> DEVOPS <tspan fill="{SIGNAL}">·</tspan> FREELANCER</text>"""
+    return svg(w, h, BASE_CSS, defs, body, "8B1T — Jiří Lhotský · SysAdmin · DevOps · Freelancer · Prague")
+
+
+# ── TERMINAL ──────────────────────────────────────────────
+
+PROMPT = "PS C:\\8b1t> "
+SCRIPT = [
+    ("cmd", "whoami"),
+    ("out", [('jiří "8b1t" lhotský', PURE), ("  ·  sysadmin · devops · freelancer", SMOKE)]),
+    ("gap",),
+    ("cmd", "Get-Content .\\focus.txt"),
+    ("out", [("→ ", SIGNAL), ("infrastructure that stays boring: patched, backed up, monitored", BONE)]),
+    ("out", [("→ ", SIGNAL), ("self-hosted web stacks that survive 3 a.m.", BONE)]),
+    ("out", [("→ ", SIGNAL), ("AI workflows that verify instead of guess", BONE)]),
+    ("gap",),
+    ("cmd", "Get-Stack | Format-Wide"),
+    ("tags", "INFRA", ["Windows Server", "RHEL", "Plesk", "nginx", "Ceph", "Zabbix"]),
+    ("tags", "CODE", ["PowerShell", "Bash", "Python", "PHP", "Kirby"]),
+    ("tags", "OPS", ["Git", "Backup", "Monitoring", "Hardening"]),
+    ("tags", "AI", ["Claude Code", "MCP", "Agentic workflows"]),
+    ("gap",),
+    ("cmd", "Test-Connection 8b1t -Count 1"),
+    ("out", [("[OK] ", OK), ("reply from Prague · time<1ms", BONE)]),
+    ("gap",),
+    ("prompt",),
+]
+
+FS, CW = 17, 17 * 0.6  # JetBrains Mono advance is exactly 0.6em
+TAG_FS, TAG_LS, TAG_PAD = 13, 1.3, 10
+X0, TOP = 32, 96
+
+
+def terminal():
+    w = 1200
+    css = BASE_CSS + """
+.s{animation:show .01s linear both}
+@keyframes show{from{opacity:0}to{opacity:1}}
+.cover{opacity:0;animation-name:type;animation-fill-mode:both}
+@keyframes type{from{opacity:1;transform:translateX(0)}to{opacity:1;transform:translateX(var(--w))}}
+.cur{opacity:0;animation-name:cur;animation-fill-mode:backwards}
+@keyframes cur{from,to{opacity:1}}
+.blink{animation:blink 1s step-end infinite}
+@keyframes blink{50%{opacity:0}}"""
+    prompt = f'<tspan fill="{SIGNAL}">{escape(PROMPT)}</tspan>'
+    px = X0 + len(PROMPT) * CW
+    rows, y, t = [], TOP, 0.4
+
+    for kind, *arg in SCRIPT:
+        if kind == "gap":
+            y += 14
+            continue
+        if kind == "cmd":
+            cmd = arg[0]
+            dur = len(cmd) * 0.045
+            # void cover slides right in steps, the cursor rides on its left edge = typing
+            rows.append(f"""<g class="s" style="animation-delay:{t:.2f}s">
+  <text class="m" x="{X0}" y="{y}" font-size="{FS}">{prompt}<tspan fill="{BONE}">{escape(cmd)}</tspan></text>
+  <g class="cover" style="--w:{len(cmd) * CW:.1f}px;animation-duration:{dur:.2f}s;animation-timing-function:steps({len(cmd)},end);animation-delay:{t + 0.25:.2f}s">
+    <rect x="{px:.1f}" y="{y - 18}" width="{len(cmd) * CW + 24:.1f}" height="24" fill="{VOID}"/>
+    <rect class="cur" x="{px:.1f}" y="{y - 17}" width="{CW:.1f}" height="22" fill="{SIGNAL}" style="animation-duration:{dur + 0.45:.2f}s;animation-delay:{t:.2f}s"/>
+  </g>
+</g>""")
+            t += dur + 0.5
+            y += 32
+        elif kind == "out":
+            spans = "".join(f'<tspan fill="{c}">{escape(s)}</tspan>' for s, c in arg[0])
+            rows.append(f'<text class="m s" x="{X0}" y="{y}" font-size="{FS}" style="animation-delay:{t:.2f}s" xml:space="preserve">{spans}</text>')
+            t += 0.12
+            y += 32
+        elif kind == "tags":
+            label, tags = arg
+            parts, x = [f'<text x="{X0}" y="{y}" font-size="{FS}" fill="{SMOKE}">{label}</text>'], X0 + 8 * CW
+            for tag in tags:
+                tag = tag.upper()
+                tw = len(tag) * (TAG_FS * 0.6 + TAG_LS) - TAG_LS + 2 * TAG_PAD
+                parts.append(f'<rect x="{x:.1f}" y="{y - 18}" width="{tw:.1f}" height="26" rx="4" fill="{CARBON}" stroke="{ASH}"/>'
+                             f'<text x="{x + TAG_PAD:.1f}" y="{y}" font-size="{TAG_FS}" font-weight="700" letter-spacing="{TAG_LS}" fill="{SIGNAL}">{escape(tag)}</text>')
+                x += tw + 8
+            assert x < w - X0, f"tag row {label} overflows the window"
+            rows.append(f'<g class="m s" style="animation-delay:{t:.2f}s">{"".join(parts)}</g>')
+            t += 0.15
+            y += 38
+        elif kind == "prompt":
+            rows.append(f"""<g class="s" style="animation-delay:{t:.2f}s">
+  <text class="m" x="{X0}" y="{y}" font-size="{FS}">{prompt}</text>
+  <rect class="blink" x="{px:.1f}" y="{y - 17}" width="{CW:.1f}" height="22" fill="{SIGNAL}"/>
+</g>""")
+            y += 32
+
+    h = y + 4
+    body = f"""<rect x=".5" y=".5" width="{w - 1}" height="{h - 1}" rx="8" fill="{VOID}" stroke="{ASH}"/>
+<path d="M1 48V9a8 8 0 0 1 8-8h{w - 18}a8 8 0 0 1 8 8v39z" fill="{CARBON}"/>
+<path d="M1 48.5H{w - 1}" stroke="{ASH}"/>
+<rect x="24" y="19" width="10" height="10" fill="{ASH}"/><rect x="42" y="19" width="10" height="10" fill="{ASH}"/><rect x="60" y="19" width="10" height="10" fill="{SIGNAL}"/>
+<text class="m" x="{w / 2}" y="29" text-anchor="middle" font-size="13" letter-spacing="1.3" fill="{SMOKE}">pwsh — 8b1t@prague: ~</text>
+{chr(10).join(rows)}"""
+    return svg(w, h, css, "", body, alt_terminal())
+
+
+def alt_terminal():
+    lines = []
+    for kind, *arg in SCRIPT:
+        if kind == "cmd":
+            lines.append(f"{PROMPT}{arg[0]}")
+        elif kind == "out":
+            lines.append("".join(s for s, _ in arg[0]))
+        elif kind == "tags":
+            lines.append(f"{arg[0]}: {', '.join(arg[1])}")
+    return " / ".join(lines)
+
+
+# ── FOOTER ────────────────────────────────────────────────
+
+EMAIL = "8b1t.biz@proton.me"
+
+
+def footer():
+    w, h = 1200, 180
+    label = f"{EMAIL.upper()}  →"
+    bw = len(label) * (17 * 0.6 + 2.5) - 2.5 + 64
+    bx = (w - bw) / 2
+    body = f"""<rect width="{w}" height="{h}" fill="{VOID}"/>
+{crop_marks(w, h)}
+<text class="m" x="600" y="46" text-anchor="middle" font-size="13" letter-spacing="3.9" fill="{SMOKE}"><tspan fill="{SIGNAL}">//</tspan> GET IN TOUCH</text>
+<rect class="pulse" x="{bx:.1f}" y="68" width="{bw:.1f}" height="56" rx="4" fill="{SIGNAL}" filter="url(#glow)"/>
+<rect x="{bx:.1f}" y="68" width="{bw:.1f}" height="56" rx="4" fill="{SIGNAL}"/>
+<text class="m" x="600" y="102" text-anchor="middle" font-size="17" font-weight="700" letter-spacing="2.5" fill="{VOID}" xml:space="preserve">{label}</text>
+<text class="m" x="600" y="158" text-anchor="middle" font-size="11" letter-spacing="3.3" fill="{SMOKE}">KREV A UHEL <tspan fill="{SIGNAL}">·</tspan> 8B1T DESIGN SYSTEM</text>"""
+    return svg(w, h, BASE_CSS, GLOW.format(12), body, f"Contact: {EMAIL}")
+
+
+# ── MAIN ──────────────────────────────────────────────────
+
+if __name__ == "__main__":
+    OUT.mkdir(exist_ok=True)
+    for name, render in {"banner": banner, "terminal": terminal, "footer": footer}.items():
+        (OUT / f"{name}.svg").write_text(render(), encoding="utf-8", newline="\n")
+        print(f"{name}.svg  {(OUT / f'{name}.svg').stat().st_size // 1024} KB")
