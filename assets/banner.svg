@@ -10,7 +10,8 @@
 </filter>
 <radialGradient id="aura"><stop offset="0" stop-color="#C20017" stop-opacity=".38"/><stop offset=".68" stop-color="#C20017" stop-opacity="0"/></radialGradient>
 <pattern id="scan" width="4" height="4" patternUnits="userSpaceOnUse"><rect width="4" height="1" fill="#FFFFFF" opacity=".03"/></pattern>
-<filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter></defs>
+<filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><clipPath id="card"><rect width="1200" height="400" rx="8.5"/></clipPath></defs>
+<g clip-path="url(#card)">
 <rect width="1200" height="400" fill="#080808"/>
 <ellipse cx="600" cy="205" rx="480" ry="240" fill="url(#aura)"/>
 <rect width="1200" height="400" filter="url(#grain)" opacity=".07"/>
@@ -28,4 +29,6 @@
 <rect class="pulse" x="577" y="292" width="46" height="2" fill="#FF0000" filter="url(#glow)"/>
 <rect x="577" y="292" width="46" height="2" fill="#FF0000"/>
 <text class="m" x="600" y="334" text-anchor="middle" font-size="16" letter-spacing="5" fill="#F5F2EF">SYSADMIN <tspan fill="#FF0000">·</tspan> DEVOPS <tspan fill="#FF0000">·</tspan> FREELANCER</text>
+</g>
+<rect x=".5" y=".5" width="1199" height="399" rx="8.5" fill="none" stroke="#3D444D" vector-effect="non-scaling-stroke"/>
 </svg>

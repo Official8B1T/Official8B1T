@@ -7,11 +7,14 @@
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}</style>
 <defs><filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
   <feGaussianBlur stdDeviation="12"/>
-</filter></defs>
+</filter><clipPath id="card"><rect width="1200" height="164" rx="8.5"/></clipPath></defs>
+<g clip-path="url(#card)">
 <rect width="1200" height="164" fill="#080808"/>
 <path d="M20 36V20H36M1180 36V20H1164M20 128V144H36M1180 128V144H1164" fill="none" stroke="#242424" stroke-width="2"/>
 <text class="m" x="600" y="46" text-anchor="middle" font-size="13" letter-spacing="3.9" fill="#818181"><tspan fill="#FF0000">//</tspan> GET IN TOUCH</text>
 <rect class="pulse" x="435.9" y="68" width="328.2" height="56" rx="4" fill="#FF0000" filter="url(#glow)"/>
 <rect x="435.9" y="68" width="328.2" height="56" rx="4" fill="#FF0000"/>
 <text class="m" x="600" y="102" text-anchor="middle" font-size="17" font-weight="700" letter-spacing="2.5" fill="#080808" xml:space="preserve">8B1T.BIZ@PROTON.ME  →</text>
+</g>
+<rect x=".5" y=".5" width="1199" height="163" rx="8.5" fill="none" stroke="#3D444D" vector-effect="non-scaling-stroke"/>
 </svg>

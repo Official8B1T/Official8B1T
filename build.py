@@ -19,6 +19,10 @@ VOID, CARBON, ASH = "#080808", "#161616", "#242424"
 CRIMSON, SIGNAL = "#C20017", "#FF0000"
 BONE, PURE, SMOKE, OK = "#F5F2EF", "#FFFFFF", "#818181", "#1FB85C"
 
+# GitHub dark card chrome, so panels sit flush with the profile's own sections
+FRAME = "#3D444D"
+RADIUS = 8.5  # ≈ GitHub's 6px once the 1200-wide panel scales into the README column
+
 # ── FONTS ─────────────────────────────────────────────────
 
 # NOTE · JetBrains Mono and Space Grotesk are SIL OFL 1.1 — embedding subsets in documents is permitted
@@ -62,8 +66,11 @@ GLOW = """<filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
 def svg(w, h, css, defs, body, label):
     return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}" width="{w}" height="{h}" role="img" aria-label="{escape(label, {'"': "&quot;"})}">
 <style>{css}</style>
-<defs>{defs}</defs>
+<defs>{defs}<clipPath id="card"><rect width="{w}" height="{h}" rx="{RADIUS}"/></clipPath></defs>
+<g clip-path="url(#card)">
 {body}
+</g>
+<rect x=".5" y=".5" width="{w - 1}" height="{h - 1}" rx="{RADIUS}" fill="none" stroke="{FRAME}" vector-effect="non-scaling-stroke"/>
 </svg>
 """
 
@@ -223,11 +230,11 @@ def terminal():
             y += 32
 
     h = y + 4
-    body = f"""<rect x=".5" y=".5" width="{w - 1}" height="{h - 1}" rx="8" fill="{VOID}" stroke="{ASH}"/>
-<path d="M1 48V9a8 8 0 0 1 8-8h{w - 18}a8 8 0 0 1 8 8v39z" fill="{CARBON}"/>
-<path d="M1 48.5H{w - 1}" stroke="{ASH}"/>
+    body = f"""<rect width="{w}" height="{h}" fill="{VOID}"/>
+<rect width="{w}" height="48" fill="{CARBON}"/>
+<path d="M0 48.5H{w}" stroke="{FRAME}" vector-effect="non-scaling-stroke"/>
 <rect x="24" y="19" width="10" height="10" fill="{ASH}"/><rect x="42" y="19" width="10" height="10" fill="{ASH}"/><rect x="60" y="19" width="10" height="10" fill="{SIGNAL}"/>
-<text class="m" x="{w / 2}" y="29" text-anchor="middle" font-size="13" letter-spacing="1.3" fill="{SMOKE}">pwsh — 8b1t@prague: ~</text>
+<text class="m" x="{w / 2}" y="29" text-anchor="middle" font-size="13" letter-spacing="1.3" fill="{SMOKE}">pwsh — official@8b1t: ~</text>
 {chr(10).join(rows)}"""
     return svg(w, h, css, "", body, alt_terminal())
 

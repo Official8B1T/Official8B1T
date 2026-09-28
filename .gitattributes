@@ -1,0 +1,2 @@
+# linguist: build.py is tooling, not what this repo is about
+*.py linguist-detectable=false

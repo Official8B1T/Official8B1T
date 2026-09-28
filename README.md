@@ -21,6 +21,6 @@
 
 <p align="center">
   <a href="https://github.com/DenverCoder1/github-readme-streak-stats">
-    <img src="https://streak-stats.demolab.com?user=Official8B1T&mode=weekly&card_width=600&card_height=200&border_radius=8&background=080808&border=242424&stroke=242424&ring=FF0000&fire=FF0000&currStreakNum=FFFFFF&sideNums=FFFFFF&currStreakLabel=FF0000&sideLabels=F5F2EF&dates=818181&date_format=j%20M%5B%20Y%5D" width="600" alt="GitHub contribution streak">
+    <img src="https://streak-stats.demolab.com?user=Official8B1T&mode=weekly&card_width=846&card_height=210&border_radius=6&background=080808&border=3D444D&stroke=3D444D&ring=FF0000&fire=FF0000&currStreakNum=FFFFFF&sideNums=FFFFFF&currStreakLabel=FF0000&sideLabels=F5F2EF&dates=818181&date_format=j%20M%5B%20Y%5D" width="100%" alt="GitHub contribution streak">
   </a>
 </p>
