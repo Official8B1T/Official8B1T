@@ -6,8 +6,8 @@
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}</style>
 <defs><filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="17.0"/></filter><clipPath id="card"><rect width="1200" height="193" rx="11.3"/></clipPath></defs>
 <g clip-path="url(#card)">
-<rect width="1200" height="193" fill="#161616"/>
-<text class="m" x="600.0" y="59.599999999999994" text-anchor="middle" font-size="17.0" letter-spacing="3.4" fill="#818181"><tspan fill="#FF0000">//</tspan> GET IN TOUCH</text>
+<rect width="1200" height="193" fill="#080808"/>
+<text class="m" x="600.0" y="59.599999999999994" text-anchor="middle" font-size="17.0" letter-spacing="3.4" fill="#FF0000">GET IN TOUCH</text>
 <rect class="pulse" x="413.3" y="85.1" width="373.4" height="62.4" rx="5.7" fill="#FF0000" filter="url(#glow)"/>
 <rect x="413.3" y="85.1" width="373.4" height="62.4" rx="5.7" fill="#FF0000"/>
 <text class="m" x="600.0" y="122.9" text-anchor="middle" font-size="18.4" font-weight="700" letter-spacing="3.7" fill="#080808" xml:space="preserve">8B1T.BIZ@PROTON.ME  →</text>

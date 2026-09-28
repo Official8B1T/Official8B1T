@@ -259,8 +259,8 @@ def contact():
     top = px(32)
     by = top + px(12) + px(16)
     h = round(by + bh + px(32))
-    body = f"""<rect width="{W}" height="{h}" fill="{CARBON}"/>
-<text class="m" x="{W / 2}" y="{top + px(10)}" text-anchor="middle" font-size="{px(12)}" letter-spacing="{px(12) * 0.2:.1f}" fill="{SMOKE}"><tspan fill="{SIGNAL}">//</tspan> GET IN TOUCH</text>
+    body = f"""<rect width="{W}" height="{h}" fill="{VOID}"/>
+<text class="m" x="{W / 2}" y="{top + px(10)}" text-anchor="middle" font-size="{px(12)}" letter-spacing="{px(12) * 0.2:.1f}" fill="{SIGNAL}">GET IN TOUCH</text>
 <rect class="pulse" x="{bx:.1f}" y="{by}" width="{bw:.1f}" height="{bh}" rx="{R1}" fill="{SIGNAL}" filter="url(#glow)"/>
 <rect x="{bx:.1f}" y="{by}" width="{bw:.1f}" height="{bh}" rx="{R1}" fill="{SIGNAL}"/>
 <text class="m" x="{W / 2}" y="{by + bh / 2 + fs * 0.36:.1f}" text-anchor="middle" font-size="{fs}" font-weight="700" letter-spacing="{ls:.1f}" fill="{VOID}" xml:space="preserve">{label}</text>"""
