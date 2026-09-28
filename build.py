@@ -108,20 +108,48 @@ def banner():
 # ── TERMINAL ──────────────────────────────────────────────
 
 PROMPT = "PS C:\\8b1t> "
+
+
+# one CV table row: when · what · kind · where, padded into monospace columns
+def cv(when, what, kind, where):
+    return ("out", [(f"{when:<13}", SMOKE), (f"{what:<26}", BONE), (f"{kind:<12}", SMOKE), (where, PURE)])
+
+
+# NOTE · content mirrors the CV minus private details (phone, birth year, district, photo)
 SCRIPT = [
     ("cmd", "whoami"),
-    ("out", [('jiří "8b1t" lhotský', PURE), ("  ·  sysadmin · devops · freelancer", SMOKE)]),
+    ("out", [('jiří "8b1t" lhotský', PURE), ("  ·  IT services  ·  Prague", SMOKE)]),
     ("gap",),
-    ("cmd", "Get-Content .\\focus.txt"),
-    ("out", [("→ ", SIGNAL), ("infrastructure that stays boring: patched, backed up, monitored", BONE)]),
-    ("out", [("→ ", SIGNAL), ("self-hosted web stacks that survive 3 a.m.", BONE)]),
-    ("out", [("→ ", SIGNAL), ("AI workflows that verify instead of guess", BONE)]),
+    ("cmd", "Get-Experience"),
+    cv("2026 → now", "IT services", "freelance", "Raw Planet s.r.o."),
+    cv("2026 → now", "IT services", "contract", "TechLines.cz s.r.o."),
+    cv("2025 → now", "IT services", "contract", "VUMS LEGEND, spol. s r.o."),
+    cv("2023 → 2025", "Process technician", "full-time", "Continental Automotive Czech Republic s.r.o."),
+    cv("2021 → 2023", "Mechanic / electrician", "internship", "GREEN Center s.r.o."),
     ("gap",),
-    ("cmd", "Get-Stack | Format-Wide"),
-    ("tags", "INFRA", ["Windows Server", "RHEL", "Plesk", "nginx", "Ceph", "Zabbix"]),
-    ("tags", "CODE", ["PowerShell", "Bash", "Python", "PHP", "Kirby"]),
-    ("tags", "OPS", ["Git", "Backup", "Monitoring", "Hardening"]),
-    ("tags", "AI", ["Claude Code", "MCP", "Agentic workflows"]),
+    ("cmd", "Get-Education"),
+    cv("2019 → 2023", "Avionics technician", "maturita", "Secondary School of Civil Aviation, Prague"),
+    cv("2025", "Python developer", "course", "ITnetwork · Django · SQLite · React"),
+    cv("2025", "AI & big data specialist", "course", "ITnetwork · neural nets · PostgreSQL"),
+    cv("2022", "English B2", "cert", "Cambridge FCE"),
+    ("gap",),
+    ("cmd", "Get-Skills | Format-Wide"),
+    ("tags", "VIRT", ["ESXi", "iDRAC", "VMware", "Hyper-V", "VirtualBox", "Kubernetes", "Docker", "Podman", "Ceph", "Headlamp"]),
+    ("tags", "OS", ["Windows Server", "Windows XP-11", "RHEL", "Rocky Linux", "CentOS", "Ubuntu", "Arch Linux",
+                    "Kali Linux", "BlackArch", "BSD / Unix", "macOS", "Android", "iOS"]),
+    ("tags", "SEC", ["FortiGate", "FortiAnalyzer", "FortiClient", "ESET Protect", "ESET Inspect", "Keeper", "Valimail", "Azure AD"]),
+    ("tags", "OPS", ["Zabbix", "Veeam VBR", "Veeam One", "Synology NAS", "Patch My PC", "Apple Business", "HCL Domino", "HCL Notes"]),
+    ("tags", "CODE", ["PowerShell", "Python", "JavaScript", "HTML / CSS", "Django", "React", "PostgreSQL", "SQLite"]),
+    ("tags", "DEV", ["Git", "Gitea", "CVS", "Nexus", "Redmine", "Jira"]),
+    ("tags", "AI", ["AI & big data", "Advanced AI via CLIs"]),
+    ("tags", "MISC", ["SAP", "MS Office", "Photoshop", "Canva", "Video editing", "Photo editing"]),
+    ("gap",),
+    ("cmd", "Get-Language"),
+    ("out", [("czech    ", BONE), ("excellent", SMOKE), ("   ·   ", SIGNAL), ("english  ", BONE), ("advanced (B2)", SMOKE)]),
+    ("gap",),
+    ("cmd", "Get-Strengths"),
+    ("out", [("→ ", SIGNAL), ("problem solving · critical thinking · reliability · working under pressure", BONE)]),
+    ("out", [("→ ", SIGNAL), ("teamwork · clear communication · leadership · always learning past my field", BONE)]),
     ("gap",),
     ("cmd", "Test-Connection 8b1t -Count 1"),
     ("out", [("[OK] ", OK), ("reply from Prague · time<1ms", BONE)]),
@@ -130,7 +158,7 @@ SCRIPT = [
 ]
 
 FS, CW = 17, 17 * 0.6  # JetBrains Mono advance is exactly 0.6em
-TAG_FS, TAG_LS, TAG_PAD = 13, 1.3, 10
+TAG_FS, TAG_LS, TAG_PAD = 14, 1.4, 10
 X0, TOP = 32, 96
 
 
@@ -167,22 +195,25 @@ def terminal():
             t += dur + 0.5
             y += 32
         elif kind == "out":
+            assert X0 + sum(len(s) for s, _ in arg[0]) * CW < w - X0, f"line overflows the window: {arg[0]}"
             spans = "".join(f'<tspan fill="{c}">{escape(s)}</tspan>' for s, c in arg[0])
             rows.append(f'<text class="m s" x="{X0}" y="{y}" font-size="{FS}" style="animation-delay:{t:.2f}s" xml:space="preserve">{spans}</text>')
-            t += 0.12
+            t += 0.08
             y += 32
         elif kind == "tags":
             label, tags = arg
-            parts, x = [f'<text x="{X0}" y="{y}" font-size="{FS}" fill="{SMOKE}">{label}</text>'], X0 + 8 * CW
+            left = X0 + 8 * CW
+            parts, x = [f'<text x="{X0}" y="{y}" font-size="{FS}" fill="{SMOKE}">{label}</text>'], left
             for tag in tags:
                 tag = tag.upper()
                 tw = len(tag) * (TAG_FS * 0.6 + TAG_LS) - TAG_LS + 2 * TAG_PAD
+                if x + tw > w - X0:  # wrap onto the next line under the same label
+                    x, y = left, y + 34
                 parts.append(f'<rect x="{x:.1f}" y="{y - 18}" width="{tw:.1f}" height="26" rx="4" fill="{CARBON}" stroke="{ASH}"/>'
                              f'<text x="{x + TAG_PAD:.1f}" y="{y}" font-size="{TAG_FS}" font-weight="700" letter-spacing="{TAG_LS}" fill="{SIGNAL}">{escape(tag)}</text>')
                 x += tw + 8
-            assert x < w - X0, f"tag row {label} overflows the window"
             rows.append(f'<g class="m s" style="animation-delay:{t:.2f}s">{"".join(parts)}</g>')
-            t += 0.15
+            t += 0.12
             y += 38
         elif kind == "prompt":
             rows.append(f"""<g class="s" style="animation-delay:{t:.2f}s">
@@ -219,7 +250,7 @@ EMAIL = "8b1t.biz@proton.me"
 
 
 def footer():
-    w, h = 1200, 180
+    w, h = 1200, 164
     label = f"{EMAIL.upper()}  →"
     bw = len(label) * (17 * 0.6 + 2.5) - 2.5 + 64
     bx = (w - bw) / 2
@@ -228,8 +259,7 @@ def footer():
 <text class="m" x="600" y="46" text-anchor="middle" font-size="13" letter-spacing="3.9" fill="{SMOKE}"><tspan fill="{SIGNAL}">//</tspan> GET IN TOUCH</text>
 <rect class="pulse" x="{bx:.1f}" y="68" width="{bw:.1f}" height="56" rx="4" fill="{SIGNAL}" filter="url(#glow)"/>
 <rect x="{bx:.1f}" y="68" width="{bw:.1f}" height="56" rx="4" fill="{SIGNAL}"/>
-<text class="m" x="600" y="102" text-anchor="middle" font-size="17" font-weight="700" letter-spacing="2.5" fill="{VOID}" xml:space="preserve">{label}</text>
-<text class="m" x="600" y="158" text-anchor="middle" font-size="11" letter-spacing="3.3" fill="{SMOKE}">KREV A UHEL <tspan fill="{SIGNAL}">·</tspan> 8B1T DESIGN SYSTEM</text>"""
+<text class="m" x="600" y="102" text-anchor="middle" font-size="17" font-weight="700" letter-spacing="2.5" fill="{VOID}" xml:space="preserve">{label}</text>"""
     return svg(w, h, BASE_CSS, GLOW.format(12), body, f"Contact: {EMAIL}")
 
 
