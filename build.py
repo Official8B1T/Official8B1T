@@ -16,7 +16,7 @@ OUT = Path(__file__).parent / "assets"
 # ── TOKENS · 8B1T Design System v2.1 ─────────────────────
 
 VOID, CARBON, ASH = "#080808", "#161616", "#242424"
-CRIMSON, SIGNAL = "#C20017", "#FF0000"
+SIGNAL = "#FF0000"
 BONE, PURE, SMOKE, OK = "#F5F2EF", "#FFFFFF", "#818181", "#1FB85C"
 
 # GitHub dark card chrome, so panels sit flush with the profile's own sections
@@ -85,17 +85,11 @@ def crop_marks(w, h, inset=20, size=16):
 
 def banner():
     w, h = 1200, 400
-    defs = f"""{GLOW.format(14)}
-<radialGradient id="aura"><stop offset="0" stop-color="{CRIMSON}" stop-opacity=".38"/><stop offset=".68" stop-color="{CRIMSON}" stop-opacity="0"/></radialGradient>
-<pattern id="scan" width="4" height="4" patternUnits="userSpaceOnUse"><rect width="4" height="1" fill="{PURE}" opacity=".03"/></pattern>
-<filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter>"""
+    defs = GLOW.format(14)
     # the glow copy repeats the wordmark with only the "1" painted, so it aligns glyph for glyph
     mark = '<tspan fill-opacity="{o}">8B</tspan><tspan fill="{s}">1</tspan><tspan fill-opacity="{o}">T</tspan>'
     word = 'x="600" y="262" text-anchor="middle" font-size="210" letter-spacing="-6"'
     body = f"""<rect width="{w}" height="{h}" fill="{VOID}"/>
-<ellipse cx="600" cy="205" rx="480" ry="240" fill="url(#aura)"/>
-<rect width="{w}" height="{h}" filter="url(#grain)" opacity=".07"/>
-<rect width="{w}" height="{h}" fill="url(#scan)"/>
 {crop_marks(w, h)}
 <g class="m" font-size="14" letter-spacing="2.8" fill="{SMOKE}">
   <text x="56" y="62"><tspan fill="{SIGNAL}">//</tspan> JIŘÍ LHOTSKÝ</text>
@@ -114,7 +108,7 @@ def banner():
 
 # ── TERMINAL ──────────────────────────────────────────────
 
-PROMPT = "PS C:\\8b1t> "
+PROMPT = "C:\\8B1T> "
 
 
 # one CV table row: when · what · kind · where, padded into monospace columns
