@@ -73,13 +73,13 @@ def grain(h):
     return f'<rect width="{W}" height="{h}" filter="url(#grain)" opacity=".04"/>'
 
 
-# render (text, color) runs; DS §15 wordmark rule — the "1" in 8B1T is always --signal
+# render (text, color) runs; DS §15 wordmark rule — 8B1T is --pure with the "1" in --signal
 def spans(segments):
     html = []
     for text, color in segments:
         for i, piece in enumerate(text.split("8B1T")):
             if i:
-                html.append(f'<tspan fill="{color}">8B</tspan><tspan fill="{SIGNAL}">1</tspan><tspan fill="{color}">T</tspan>')
+                html.append(f'<tspan fill="{PURE}">8B</tspan><tspan fill="{SIGNAL}">1</tspan><tspan fill="{PURE}">T</tspan>')
             if piece:
                 html.append(f'<tspan fill="{color}">{escape(piece)}</tspan>')
     return "".join(html)
@@ -98,22 +98,21 @@ def svg(h, css, defs, body, label):
 """
 
 
-# ── TERMINAL · Windows Terminal running PowerShell ────────
+# ── TERMINAL · Git for Windows (Git Bash in mintty) ───────
 
-PROMPT = "C:\\8B1T> "
+# Git Bash default PS1: blank line, user@host MSYSTEM cwd (branch), then "$ " on its own line
+PS1 = [("official@8B1T", SIGNAL), (" ", BONE), ("MINGW64", SMOKE), (" ", BONE), ("/c/8B1T", BONE), (" ", BONE), ("(main)", SMOKE)]
+PROMPT = "$ "
+TITLE = "MINGW64:/c/8B1T"  # mintty window title = $MSYSTEM:$PWD
 FS, LH = 18, 26
 CW = FS * 0.6  # JetBrains Mono advance is exactly 0.6em
 X0 = px(16)
 COLS = int((W - 2 * X0) // CW)  # console width in characters
 
 
-# PowerShell-ish highlighting: commands --signal, parameters and operators --smoke, strings --bone
+# bash does no syntax highlighting — the typed line stays plain --pure
 def cmd(line):
-    parts = []
-    for tok in re.findall(r"'[^']*'|\S+", line):
-        color = SMOKE if tok == "|" or tok.startswith("-") else BONE if tok.startswith("'") else SIGNAL
-        parts.append((tok, color))
-    return [("cmd", parts)]
+    return [("blank",), ("text", PS1, False), ("cmd", line)]
 
 
 def out(text, color=BONE):
@@ -134,41 +133,40 @@ def pack(text, width):
     return lines
 
 
-# Format-Table -Wrap: autosized columns, headers + dashes, last column wraps under itself
+# a column-aligned text file as `cat` prints it; last column wraps under itself
 # colors carry the DS hierarchy per column: --smoke meta, --bone text, --pure key value
 def table(headers, rows, colors):
     widths = [max(len(r[i]) for r in (headers, *rows)) for i in range(len(headers))]
-    lead = sum(widths[:-1]) + len(widths) - 1
-    line = lambda cells: " ".join(c.ljust(w) for c, w in zip(cells, widths)).rstrip()
-    items = [("blank",), ("text", [(line(headers), SIGNAL)], True), ("text", [(line(["-" * len(h) for h in headers]), SMOKE)], False)]
+    lead = sum(widths[:-1]) + 2 * (len(widths) - 1)
+    items = [("text", [("  ".join(h.ljust(w) for h, w in zip(headers, widths)).rstrip(), SIGNAL)], True)]
     for r in rows:
         for i, chunk in enumerate(pack(r[-1], COLS - lead)):
-            cells = [(c.ljust(w) + " ", col) for c, w, col in zip(r[:-1], widths, colors)] if i == 0 else [(" " * lead, BONE)]
+            cells = [(c.ljust(w) + "  ", col) for c, w, col in zip(r[:-1], widths, colors)] if i == 0 else [(" " * lead, BONE)]
             items.append(("text", cells + [(chunk, colors[-1])], False))
-    return items + [("blank",)]
+    return items
 
 
 # NOTE · content mirrors the CV minus private details (phone, birth year, district, photo)
 SCRIPT = [
-    *cmd("whoami"),
-    *out('Jiří "8B1T" Lhotský', PURE), ("blank",),
-    *cmd("Get-Experience"),
-    *table(["Period", "Role", "Type", "Company"], [
+    *cmd("git config user.name"),
+    *out('Jiří "8B1T" Lhotský', PURE),
+    *cmd("cat experience.txt"),
+    *table(["PERIOD", "ROLE", "TYPE", "COMPANY"], [
         ["2026 → now", "IT services", "freelance", "Raw Planet s.r.o."],
         ["2026 → now", "IT services", "contract", "TechLines.cz s.r.o."],
         ["2025 → now", "IT services", "contract", "VUMS LEGEND, spol. s r.o."],
         ["2023 → 2025", "Process technician", "full-time", "Continental Automotive Czech Republic s.r.o."],
         ["2021 → 2023", "Mechanic / electrician", "internship", "GREEN Center s.r.o."],
     ], [SMOKE, BONE, SMOKE, PURE]),
-    *cmd("Get-Education"),
-    *table(["Period", "Program", "Type", "Institution"], [
+    *cmd("cat education.txt"),
+    *table(["PERIOD", "PROGRAM", "TYPE", "INSTITUTION"], [
         ["2019 → 2023", "Avionics technician", "maturita", "Secondary School of Civil Aviation, Prague"],
         ["2025", "Python · Django · React", "course", "ITnetwork"],
         ["2025", "AI & big data specialist", "course", "ITnetwork"],
         ["2022", "English B2 (FCE)", "cert", "Cambridge English"],
     ], [SMOKE, BONE, SMOKE, PURE]),
-    *cmd("Get-Skills | Format-Table -Wrap"),
-    *table(["Category", "Skills"], [
+    *cmd("cat skills.txt"),
+    *table(["CATEGORY", "SKILLS"], [
         ["Virtualization", "ESXi, iDRAC, VMware, Hyper-V, VirtualBox, Kubernetes, Docker, Podman, Ceph, Headlamp"],
         ["OS", "Windows Server, Windows XP-11, RHEL, Rocky Linux, CentOS, Ubuntu, Arch Linux, Kali Linux, "
                "BlackArch, BSD / Unix, macOS, Android, iOS"],
@@ -179,39 +177,30 @@ SCRIPT = [
         ["AI", "AI & big data, advanced AI via CLIs"],
         ["Other", "SAP, MS Office, Photoshop, Canva, video editing, photo editing"],
     ], [SMOKE, BONE]),
-    *cmd("Get-Language"),
-    *table(["Language", "Level"], [["Czech", "Excellent"], ["English", "Advanced (B2)"]], [PURE, BONE]),
-    *cmd("Get-Strengths | Join-String -Separator ', '"),
+    *cmd("cat languages.txt"),
+    *table(["LANGUAGE", "LEVEL"], [["Czech", "Excellent"], ["English", "Advanced (B2)"]], [PURE, BONE]),
+    *cmd("cat strengths.txt"),
     *out("Problem solving, Critical thinking, Reliability, Independence, Working under pressure, "
          "Teamwork, Clear communication, Leadership, Eagerness to learn"),
-    ("blank",),
+    ("blank",), ("text", PS1, False),
     ("prompt",),
 ]
 
 
-# Windows Terminal tab strip: one active tab, new-tab + dropdown, caption buttons
+# mintty title bar: Git diamond, $MSYSTEM:$PWD title, caption buttons
 def chrome(tb):
-    tx, ty, tw = px(8), px(8), px(232)
-    r, bottom = px(8), tb
-    tab = f"M{tx} {bottom}V{ty + r}Q{tx} {ty} {tx + r} {ty}H{tx + tw - r}Q{tx + tw} {ty} {tx + tw} {ty + r}V{bottom}Z"
-    cy = ty + (bottom - ty) / 2
+    cy, s = tb / 2, px(10)
+    ix = px(20)
     g = px(5)  # half glyph size
 
-    def x_mark(cx, s):
-        return f'<path d="M{cx - s} {cy - s}L{cx + s} {cy + s}M{cx + s} {cy - s}L{cx - s} {cy + s}" {HAIRLINE}/>'
+    def x_mark(cx):
+        return f'<path d="M{cx - g} {cy - g}L{cx + g} {cy + g}M{cx + g} {cy - g}L{cx - g} {cy + g}" {HAIRLINE}/>'
 
-    nx = tx + tw + px(20)
     caption = [W - px(23), W - px(69), W - px(115)]  # close · maximize · minimize, 46px buttons
     return f"""<rect width="{W}" height="{tb}" fill="{CARBON}"/>
-<path d="{tab}" fill="{VOID}"/>
-<rect class="pulse" x="{tx + r}" y="{ty}" width="{tw - 2 * r}" height="{px(2)}" fill="{SIGNAL}" filter="url(#glow)"/>
-<rect x="{tx + r}" y="{ty}" width="{tw - 2 * r}" height="{px(2)}" fill="{SIGNAL}"/>
-<text class="m" x="{tx + px(12)}" y="{cy + px(4)}" font-size="{px(12)}" font-weight="700" fill="{SIGNAL}">&gt;_</text>
-<text class="m" x="{tx + px(36)}" y="{cy + px(4)}" font-size="{px(12)}" letter-spacing="{px(12) * 0.2:.1f}" fill="{BONE}">POWERSHELL</text>
-{x_mark(tx + tw - px(18), px(4))}
-<path d="M{nx - g} {cy}H{nx + g}M{nx} {cy - g}V{cy + g}" {HAIRLINE}/>
-<path d="M{nx + px(20)} {cy - px(2)}l{px(4)} {px(4)}l{px(4)} {-px(4)}" {HAIRLINE}/>
-{x_mark(caption[0], g)}
+<rect x="{ix - s / 2}" y="{cy - s / 2}" width="{s}" height="{s}" rx="{px(2)}" fill="{SIGNAL}" transform="rotate(45 {ix} {cy})"/>
+<text class="m" x="{px(40)}" y="{cy + px(4)}" font-size="{px(12)}" xml:space="preserve">{spans([(TITLE, BONE)])}</text>
+{x_mark(caption[0])}
 <rect x="{caption[1] - g}" y="{cy - g}" width="{2 * g}" height="{2 * g}" {HAIRLINE}/>
 <path d="M{caption[2] - g} {cy}H{caption[2] + g}" {HAIRLINE}/>"""
 
@@ -226,26 +215,25 @@ def terminal():
 @keyframes cur{from,to{opacity:1}}
 .blink{animation:blink 1s step-end infinite}
 @keyframes blink{50%{opacity:0}}"""
-    tb = px(40)
+    tb = px(32)
     prompt = spans([(PROMPT, BONE)])
     px0 = X0 + len(PROMPT) * CW
-    bar = f'width="{px(2)}" height="{FS + 4}" fill="{SIGNAL}"'  # Windows Terminal default bar cursor
-    rows, y, t = [], tb + px(16) + FS, 0.3
+    block = f'width="{CW:.1f}" height="{FS + 4}" fill="{SIGNAL}"'  # mintty default block cursor
+    rows, y, t = [], tb + px(12) + FS, 0.3
 
     for kind, *arg in SCRIPT:
         if kind == "blank":
             y += LH
             continue
         if kind == "cmd":
-            text = " ".join(s for s, _ in arg[0])
-            typed = spans([seg for tok in arg[0] for seg in ((" ", BONE), tok)][1:])
+            text = arg[0]
             dur = len(text) * 0.04
             # a void cover slides right in steps and the cursor rides its left edge = typing
             rows.append(f"""<g class="s" style="animation-delay:{t:.2f}s">
-  <text class="m" x="{X0}" y="{y}" font-size="{FS}" xml:space="preserve">{prompt}{typed}</text>
+  <text class="m" x="{X0}" y="{y}" font-size="{FS}" xml:space="preserve">{prompt}{spans([(text, PURE)])}</text>
   <g class="cover" style="--w:{len(text) * CW:.1f}px;animation-duration:{dur:.2f}s;animation-timing-function:steps({len(text)},end);animation-delay:{t + 0.25:.2f}s">
     <rect x="{px0:.1f}" y="{y - FS}" width="{len(text) * CW + 24:.1f}" height="{FS + 8}" fill="{VOID}"/>
-    <rect class="cur" x="{px0:.1f}" y="{y - FS + 1}" {bar} style="animation-duration:{dur + 0.45:.2f}s;animation-delay:{t:.2f}s"/>
+    <rect class="cur" x="{px0:.1f}" y="{y - FS + 1}" {block} style="animation-duration:{dur + 0.45:.2f}s;animation-delay:{t:.2f}s"/>
   </g>
 </g>""")
             t += dur + 0.45
@@ -260,12 +248,13 @@ def terminal():
         elif kind == "prompt":
             rows.append(f"""<g class="s" style="animation-delay:{t:.2f}s">
   <text class="m" x="{X0}" y="{y}" font-size="{FS}" xml:space="preserve">{prompt}</text>
-  <g class="blink"><rect class="pulse" x="{px0:.1f}" y="{y - FS + 1}" {bar} filter="url(#glow)"/><rect x="{px0:.1f}" y="{y - FS + 1}" {bar}/></g>
+  <g class="blink"><rect class="pulse" x="{px0:.1f}" y="{y - FS + 1}" {block} filter="url(#glow)"/><rect x="{px0:.1f}" y="{y - FS + 1}" {block}/></g>
 </g>""")
         y += LH
 
     h = round(y - LH + px(16))
-    body = f'<rect width="{W}" height="{h}" fill="{VOID}"/>\n{grain(h)}\n{chrome(tb)}\n' + "\n".join(rows)
+    # grain sits on top so the typing cover never punches a flat hole into it
+    body = f'<rect width="{W}" height="{h}" fill="{VOID}"/>\n{chrome(tb)}\n' + "\n".join(rows) + f"\n{grain(h)}"
     return svg(h, css, glow(px(4)) + GRAIN, body, alt_terminal())
 
 
@@ -273,8 +262,8 @@ def alt_terminal():
     lines = []
     for kind, *arg in SCRIPT:
         if kind == "cmd":
-            lines.append(PROMPT + " ".join(s for s, _ in arg[0]))
-        elif kind == "text":
+            lines.append(PROMPT + arg[0])
+        elif kind == "text" and arg[0] is not PS1:
             lines.append("".join(s for s, _ in arg[0]).strip())
     return " / ".join(lines)
 
