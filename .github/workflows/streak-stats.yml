@@ -1,0 +1,40 @@
+# ─────────────────────────────────────────────────────
+#   project · Official8B1T
+#   module  · streak-stats.yml — renders the streak card into the repo daily
+#   author  · Jiří "8B1T" Lhotský
+# ─────────────────────────────────────────────────────
+
+# NOTE · replaces the public streak-stats.demolab.com endpoint (503 on 2026-11-03)
+name: Update streak stats
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  push:
+    paths:
+      - ".github/workflows/streak-stats.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      # actions pinned to commits — tags are mutable
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Generate streak stats
+        uses: DenverCoder1/github-readme-streak-stats@adbd07609bb771d3510a15ee2f3b31d5fbe5201d # v1 (1.8.1)
+        with:
+          options: user=${{ github.repository_owner }}&mode=weekly&card_width=846&card_height=210&border_radius=8&background=080808&border=242424&stroke=242424&ring=FF0000&fire=FF0000&currStreakNum=FFFFFF&sideNums=FFFFFF&currStreakLabel=FF0000&sideLabels=F5F2EF&dates=818181&date_format=j%20M%5B%20Y%5D
+          path: assets/streak.svg
+
+      - name: Commit streak stats
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add assets/streak.svg
+          git commit -m "Update streak stats" || exit 0
+          git push
