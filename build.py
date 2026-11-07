@@ -168,7 +168,7 @@ SCRIPT = [
     *cmd("cat skills.txt"),
     *table(["CATEGORY", "SKILLS"], [
         ["Virtualization", "ESXi, iDRAC, VMware, Hyper-V, VirtualBox, Kubernetes, Docker, Podman, Ceph, Headlamp"],
-        ["OS", "Windows Server, Windows XP-11, RHEL, Rocky Linux, CentOS, Ubuntu, Arch Linux, Kali Linux, "
+        ["OS", "Windows Server, Windows XP-11, RHEL, Rocky Linux, AlmaLinux, CentOS, Ubuntu, Arch Linux, Kali Linux, "
                "BlackArch, BSD / Unix, macOS, Android, iOS"],
         ["Security", "FortiGate, FortiAnalyzer, FortiClient, ESET Protect, ESET Inspect, Keeper, Valimail, Azure AD"],
         ["Operations", "Zabbix, Veeam VBR, Veeam One, Synology NAS, EATON UPS, Patch My PC, Apple Business, HCL Domino, HCL Notes"],
